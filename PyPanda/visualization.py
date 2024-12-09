@@ -1,0 +1,39 @@
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+def PMTHeatmapper(freq_df):
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(freq_df, cmap='viridis', fmt=".0f", linewidths=.5, square=True)
+    plt.title(f'PMT Heatmap ')
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.show()
+    plt.close()
+
+
+
+
+
+def PMTImshow(freq_df):
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(freq_df, cmap='viridis', fmt=".0f", linewidths=.5, square=True)
+    plt.title(f'PMT Heatmap ')
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    # plt.savefig(image_path)
+    plt.show()
+    plt.close()
+
+
+def PMT3DScatter(matrix,color):
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+    x, y = np.meshgrid(np.arange(matrix.shape[1]), np.arange(matrix.shape[0]))
+    z = matrix
+    ax.scatter(x, y, z, color=color, s=10)
+
+
