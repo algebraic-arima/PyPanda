@@ -9,9 +9,6 @@ from sklearn.model_selection import train_test_split
 from concurrent.futures import ProcessPoolExecutor
 
 
-current_dir = r'D:\JetBrains\Py Charm Project\pos2pmt'
-os.chdir(current_dir)
-
 
 def RemoveDir(log_dir):
     if os.path.exists(log_dir):
@@ -20,6 +17,7 @@ def RemoveDir(log_dir):
     print(f"Created new log directory: {log_dir}")
     return log_dir
 
+
 def remove_folders_with_network(dir_path):
     for root, dirs, files in os.walk(dir_path, topdown=False):
         for dir_name in dirs:
@@ -27,8 +25,6 @@ def remove_folders_with_network(dir_path):
                 folder_path = os.path.join(root, dir_name)
                 shutil.rmtree(folder_path)
                 print(f"Deleted folder: {folder_path}")
-
-
 
 
 def normalize(data, max_val=None):
@@ -116,7 +112,7 @@ def train_network(net, train_loader, val_loader, label_idx, epochs=51, log_dir='
 
 
 def main():
-    log_dir = RemoveDir(current_dir + r'\logs')
+    log_dir = RemoveDir(r'\logs')
 
     all_data = np.load(r'.\DATA\data_classic.npy')
     test_size = 0.2
