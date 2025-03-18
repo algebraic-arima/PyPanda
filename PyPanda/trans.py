@@ -2,19 +2,35 @@ import numpy as np
 import pandas as pd
 
 
-
 class PMTTrans:
-    def __init__(self, dis):
+    def __init__(self, dis=71):
         self.dis_top = dis
-        self.coordinates = self.generate_coordinates()
+        self.coordinates, self.mask, self.x_array, self.y_array \
+            = self.generate_coordinates()
 
     def generate_coordinates(self):
+        x_array, y_array = [], []
         x_coords, y_coords = [], []
-        for i in range(100):
-            for j in range(100):
-                x = -50 * self.dis_top + self.dis_top / 2 + i * self.dis_top
-                y = -50 * self.dis_top + self.dis_top / 2 + j * self.dis_top
+        mask = np.zeros((56, 56))
+
+        for i in range(28):
+            x = -13.5 * self.dis_top + i * self.dis_top
+            x_array.append("{:.3f}".format(x - 12.125))
+            x_array.append("{:.3f}".format(x + 12.125))
+            y_array.append("{:.3f}".format(x - 12.125))
+            y_array.append("{:.3f}".format(x + 12.125))
+
+        for i in range(28):
+            for j in range(28):
+                x = -13.5 * self.dis_top + i * self.dis_top
+                y = -13.5 * self.dis_top + j * self.dis_top
+
                 if x * x + y * y < 960 * 960:
+                    mask[2 * i][2 * j] = 4
+                    mask[2 * i + 1][2 * j] = 3.5
+                    mask[2 * i][2 * j + 1] = 1.5
+                    mask[2 * i + 1][2 * j + 1] = 1
+
                     x_coords.append(x - 12.125)
                     y_coords.append(y + 12.125)
 
@@ -26,10 +42,10 @@ class PMTTrans:
 
                     x_coords.append(x + 12.125)
                     y_coords.append(y - 12.125)
-        return list(zip(x_coords, y_coords))
+        return list(zip(x_coords, y_coords)), mask, x_array, y_array
 
     def array2matrix(self, array):
-        all_pmt_numbers=range(2304)
+        all_pmt_numbers = range(2304)
         count_dict = {pmt_num: 0 for pmt_num in all_pmt_numbers}
         for index, value in enumerate(array):
             count_dict[index] = value

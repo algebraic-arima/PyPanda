@@ -38,7 +38,8 @@ class LoadEncoder:
         self.model.eval()
 
     def reconstruct(self, noisy_data):
-        noisy_data=torch.tensor(noisy_data, dtype=torch.float32).view(1, 1, 56, 56)
+        noisy_data = torch.tensor(noisy_data, dtype=torch.float32).view(1, 1, 56, 56).to(self.device)
+        # noisy_data.to(self.device)
         with torch.no_grad():
             reconstructed_data = self.model(noisy_data)
         return reconstructed_data
@@ -90,9 +91,9 @@ class LoadPMT2POS:
         self.model.load_state_dict(torch.load(self.model_path, map_location=self.device), strict=False)
         self.model.eval()
 
-    def reconstruct(self, matrix_top,matrix_bot):
-        matrix_top=torch.tensor(matrix_top, dtype=torch.float32).view(1,56, 56)
-        matrix_bot = torch.tensor(matrix_bot, dtype=torch.float32).view(1,56, 56)
+    def reconstruct(self, matrix_top, matrix_bot):
+        matrix_top = torch.tensor(matrix_top, dtype=torch.float32).view(1, 56, 56).to(self.device)
+        matrix_bot = torch.tensor(matrix_bot, dtype=torch.float32).view(1, 56, 56).to(self.device)
         with torch.no_grad():
-            pos = self.model(matrix_top,matrix_bot)
+            pos = self.model(matrix_top, matrix_bot)
         return pos

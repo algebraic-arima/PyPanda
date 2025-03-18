@@ -9,8 +9,8 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 # Please modify os.chdir to your specific path
-current_dir = r'D:\JetBrains\Py Charm Project\CNN4Pandax_new'
-os.chdir(r'D:\JetBrains\Py Charm Project\CNN4Pandax_new')
+current_dir = r'E:/my_files/PyPanda/Model/pmt2pos'
+os.chdir(current_dir)
 
 
 def RemoveDir(log_dir):
@@ -95,7 +95,7 @@ class CombinedCNN(nn.Module):
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-model = CombinedCNN().to(device)
+model = CombinedCNN(2).to(device)
 print(model)
 
 loss = nn.MSELoss()
@@ -111,6 +111,7 @@ for epoch in range(epochs):
         inputs, matrix_sum, labels = data
         inputs, matrix_sum, labels = inputs.to(device), matrix_sum.to(device), labels.to(device)
         outputs = model(inputs, matrix_sum)
+        labels = labels[:, 0:2]
         result = loss(outputs, labels)
         optimizer.zero_grad()
         result.backward()
@@ -125,8 +126,9 @@ for epoch in range(epochs):
         inputs, matrix_sum, labels = data
         inputs, matrix_sum, labels = inputs.to(device), matrix_sum.to(device), labels.to(device)
         outputs = model(inputs, matrix_sum)
+        labels = labels[:, 0:2]
         errors = labels - outputs
-        errors = errors.detach().numpy()
+        errors = errors.detach().cpu().numpy()
         for i in range(errors.shape[1]):
             writer.add_histogram(f"val_error_{i}", errors[:, i], epoch)
         result = loss(outputs, labels)
