@@ -19,7 +19,7 @@ class PMTTrans:
             x_array.append("{:.3f}".format(x + 12.125))
             y_array.append("{:.3f}".format(x - 12.125))
             y_array.append("{:.3f}".format(x + 12.125))
-
+        y_array.reverse()
         for i in range(28):
             for j in range(28):
                 x = -13.5 * self.dis_top + i * self.dis_top

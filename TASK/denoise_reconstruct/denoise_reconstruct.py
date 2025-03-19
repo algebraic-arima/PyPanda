@@ -1,61 +1,73 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import PyPanda as pp
+import seaborn as sns
 import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cpu = torch.device("cpu")
-
-index = 4
-# data = np.load(r'../../DATA/Classic/data_classic.npy')
-data = np.load(r'../../DATA/Geant4/data_100w.npy')
-data1 = data[index, :56 ** 2].reshape(56, 56)
-data2 = data[index, 56 ** 2:56 ** 2 * 2].reshape(56, 56)
-data1 = data1 / data1.max()
-data2 = data2 / data2.max()
-data_noise1 = data1 * (1 + np.random.normal(0, 0.1, data1.shape))
-data_noise2 = data2 * (1 + np.random.normal(0, 0.1, data2.shape))
-data_noise1 = data_noise1 / data_noise1.max()
-data_noise2 = data_noise2 / data_noise2.max()
-
 load_encoder = pp.LoadEncoder()
 load_encoder.model.to(device)
-denoise_data1 = load_encoder.reconstruct(data_noise1).cpu().numpy().reshape(56, 56)
-denoise_data2 = load_encoder.reconstruct(data_noise2).cpu().numpy().reshape(56, 56)
-denoise_data1 = denoise_data1 / denoise_data1.max()
-denoise_data2 = denoise_data2 / denoise_data2.max()
-
 load_pmt2pos = pp.LoadPMT2POS()
 load_pmt2pos.model.to(device)
-reconstructed_pos = load_pmt2pos.reconstruct(denoise_data1, denoise_data2)
-raw_pos = load_pmt2pos.reconstruct(data_noise1, data_noise2)
+data = np.load(r'../../DATA/Classic/data_classic.npy')
+# data = np.load(r'../../DATA/Geant4/data_100w.npy')
+err_x, err_y = [], []
 
-print('reconstructed_pos:', reconstructed_pos)
-print('raw_pos:', raw_pos)
-print('True:', data[index, -3:] / 100)
+for index in range(data.shape[0]):
+    data1 = data[index, :56 ** 2].reshape(56, 56)
+    data2 = data[index, 56 ** 2:56 ** 2 * 2].reshape(56, 56)
+    data1 = data1 / data1.max()
+    data2 = data2 / data2.max()
+    data_noise1 = data1 * (1 + np.random.normal(0, 0.1, data1.shape))
+    data_noise2 = data2 * (1 + np.random.normal(0, 0.1, data2.shape))
+    data_noise1 = data_noise1 / data_noise1.max()
+    data_noise2 = data_noise2 / data_noise2.max()
 
+    denoise_data1 = load_encoder.reconstruct(data_noise1).cpu().numpy().reshape(56, 56)
+    denoise_data2 = load_encoder.reconstruct(data_noise2).cpu().numpy().reshape(56, 56)
+    denoise_data1 = denoise_data1 / denoise_data1.max()
+    denoise_data2 = denoise_data2 / denoise_data2.max()
 
-def plot_3d_data(ax, matrix, color, label):
-    x, y = np.meshgrid(np.arange(matrix.shape[1]), np.arange(matrix.shape[0]))
-    z = matrix
-    ax.scatter(x, y, z, color=color, label=label, s=10)
+    reconstructed_pos = load_pmt2pos.reconstruct(denoise_data1, denoise_data2)
+    raw_pos = load_pmt2pos.reconstruct(data_noise1, data_noise2)
+    origin_pos = (data[index, -3:] / 100)[0:2].reshape(1, 2)
+    # error = (reconstructed_pos-raw_pos).cpu().numpy()
+    error = (reconstructed_pos.cpu() - origin_pos).numpy()
+    err_x.append(error[0][0])
+    err_y.append(error[0][1])
 
-
-fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
-
-# matrix1=matrix1*np.sum(data_noise)/np.sum(matrix1)
-plot_3d_data(ax, data1, 'red', "no noise")  # 使用红色
-
-# matrix2 = data_noise
-plot_3d_data(ax, data_noise1, 'blue', "noise")  # 使用蓝色
-
-plot_3d_data(ax, denoise_data1, 'green', "clean")  # 使用红色
-
-ax.set_title('PMT 3D Plot - Combined Data')
-ax.set_xlabel('X Coordinate')
-ax.set_ylabel('Y Coordinate')
-ax.set_zlabel('Frequency')
-
-ax.legend()
+print(err_x, err_y)
+plt.figure(figsize=(8, 8))
+sns.kdeplot(x=err_x, y=err_y, cmap="viridis", fill=True, thresh=0.000001)
 plt.show()
+
+# print('reconstructed_pos:', reconstructed_pos)
+# print('raw_pos:', raw_pos)
+# print('True:', data[index, -3:] / 100)
+
+
+# def plot_3d_data(ax, matrix, color, label):
+#     x, y = np.meshgrid(np.arange(matrix.shape[1]), np.arange(matrix.shape[0]))
+#     z = matrix
+#     ax.scatter(x, y, z, color=color, label=label, s=10)
+#
+#
+# fig = plt.figure(figsize=(10, 8))
+# ax = fig.add_subplot(111, projection='3d')
+#
+# # matrix1=matrix1*np.sum(data_noise)/np.sum(matrix1)
+# plot_3d_data(ax, data1, 'red', "no noise")  # 使用红色
+#
+# # matrix2 = data_noise
+# plot_3d_data(ax, data_noise1, 'blue', "noise")  # 使用蓝色
+#
+# plot_3d_data(ax, denoise_data1, 'green', "clean")  # 使用红色
+#
+# ax.set_title('PMT 3D Plot - Combined Data')
+# ax.set_xlabel('X Coordinate')
+# ax.set_ylabel('Y Coordinate')
+# ax.set_zlabel('Frequency')
+#
+# ax.legend()
+# plt.show()

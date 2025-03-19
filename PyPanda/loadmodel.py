@@ -30,7 +30,7 @@ class ConvDenoisingAutoencoder(nn.Module):
 
 
 class LoadEncoder:
-    def __init__(self, model_path=r'../../Model/Encoder/model/encoder2d.pth'):
+    def __init__(self, model_path=r'../../Model/encoder2d.pth'):
         self.model_path = model_path
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.model = ConvDenoisingAutoencoder().to(self.device)
@@ -84,10 +84,10 @@ class CombinedCNN(nn.Module):
 
 
 class LoadPMT2POS:
-    def __init__(self, model_path=r'../../Model/pmt2pos/model/conv_model_combined.pth'):
+    def __init__(self, model_path=r'../../Model/conv_model_combined.pth'):
         self.model_path = model_path
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.model = CombinedCNN().to(self.device)
+        self.model = CombinedCNN(2).to(self.device)
         self.model.load_state_dict(torch.load(self.model_path, map_location=self.device), strict=False)
         self.model.eval()
 

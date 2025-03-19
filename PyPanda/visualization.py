@@ -3,8 +3,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def PMTHeatmapper(freq_df, xtick, ytick):
+def PMTHeatmapper(freq_df, xtick, ytick, param):
     plt.figure(figsize=(15, 12))
+    freq_df = np.flip(freq_df, axis=0)
     sns.heatmap(freq_df,
                 cmap='viridis',
                 fmt=".0f",
@@ -12,7 +13,7 @@ def PMTHeatmapper(freq_df, xtick, ytick):
                 square=True,
                 xticklabels=xtick,
                 yticklabels=ytick)
-    plt.title(f'PMT Heatmap ')
+    plt.title(f'PMT Heatmap {param}')
     plt.xlabel('X Coordinate')
     plt.ylabel('Y Coordinate')
     plt.show()
