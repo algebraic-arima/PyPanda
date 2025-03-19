@@ -8,17 +8,6 @@ from torch.utils.tensorboard import SummaryWriter
 import PyPanda as pp
 
 
-def RemoveDir(log_dir):
-    if os.path.exists(log_dir):
-        file_list = os.listdir(log_dir)
-        for file in file_list:
-            file_path = os.path.join(log_dir, file)
-            os.remove(file_path)
-    else:
-        os.makedirs(log_dir)
-    print(f"Created new log directory: {log_dir}")
-
-
 class POS2LABEL(Dataset):
     def __init__(self, noisy_data, clean_data):
         self.noisy_data = torch.tensor(noisy_data, dtype=torch.float32)
@@ -74,14 +63,11 @@ def add_noise_to_data(data, data_z, num_noise_realizations,mode):
     return np.array(noisy_data_list)
 
 
-
-RemoveDir(r'./logs')
-
 data = np.load("../../DATA/Classic/data_classic_8e3.npy")
 data_z = data[:, -1]
 data = data[:, :56 * 56].reshape(-1, 56, 56)
 
-num_noise_realizations = 1
+num_noise_realizations = 3
 noisy_data_database = add_noise_to_data(data,data_z, num_noise_realizations,'top')
 data_tile_top = np.tile(data, (num_noise_realizations, 1, 1))
 noisy_data_database_reshape_top = noisy_data_database.reshape(-1, 56 * 56)
@@ -100,21 +86,25 @@ dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-model = ConvDenoisingAutoencoder().to(device)
-print(model)
 print("device:",device)
+model = ConvDenoisingAutoencoder().to(device)
+model_path = r'./model/encoder2d.pth'
+model.load_state_dict(torch.load(model_path))
+print(model)
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.MSELoss()
 ppp=pp.PMTTrans(71)
 mask=ppp.create_mask()
 mask=torch.tensor(mask,dtype=torch.float32).to(device)
 
-epochs = 201
+start_epoch = 102
+epochs = 100
+
 writer = SummaryWriter(r"./logs")
-for epoch in range(epochs):
+for epoch in range(start_epoch, start_epoch + epochs):
     running_loss = 0.0
     for noisy_data, clean_data in dataloader:
-        noisy_data = noisy_data.view(-1, 1, 56, 56).to(device=device)
+        noisy_data = noisy_data.view(-1, 1, 56, 56).to(device=device) # 调整形状以匹配模型输入
         clean_data = clean_data.view(-1, 1, 56, 56).to(device=device)
         optimizer.zero_grad()
         reconstructed = model(noisy_data,mask)
@@ -128,4 +118,4 @@ for epoch in range(epochs):
     writer.flush()
 
 
-torch.save(model.state_dict(), r'./model/encoder2d.pth')
+torch.save(model.state_dict(), r'./model/encoder2d_con.pth')

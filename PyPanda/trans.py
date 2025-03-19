@@ -5,8 +5,7 @@ import pandas as pd
 class PMTTrans:
     def __init__(self, dis=71):
         self.dis_top = dis
-        self.coordinates, self.mask, self.x_array, self.y_array \
-            = self.generate_coordinates()
+        self.coordinates, self.mask, self.x_array, self.y_array = self.generate_coordinates()
 
     def generate_coordinates(self):
         x_array, y_array = [], []
